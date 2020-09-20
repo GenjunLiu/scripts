@@ -3,11 +3,11 @@ from collections import defaultdict
 
 # key: feature name
 # value: wanted count
-feature_list = {"feat_a": 2, "feat_b": 2, "feat_c": 2, "feat_d": 1, "feat_e": 2}
+feature_list = {"feat_a": 2, "feat_b": 5, "feat_c": 2, "feat_d": 1, "feat_e": 2}
 
 # sentence to features
 sent_to_feat = {
-    "sent_0": ["feat_a", "feat_b"],
+    "sent_0": ["feat_a", "feat_b", "feat_b", "feat_b"],
     "sent_1": ["feat_d"],
     "sent_2": ["feat_c", "feat_d"],
     "sent_3": ["feat_a", "feat_d"],
@@ -39,10 +39,12 @@ def find_min_needed_sents(feat_sent_mat, want_feat_count, index):
   # select current sentence
   new_count = copy.deepcopy(want_feat_count)
   for i in range(0, len(want_feat_count)):
-    if not feat_sent_mat[i][index]:
+    if feat_sent_mat[i][index] == 0:
       continue
-    if new_count[i] > 0:
-      new_count[i] -= 1
+    if new_count[i] > feat_sent_mat[i][index]:
+      new_count[i] -= feat_sent_mat[i][index]
+    else:
+      new_count[i] = 0
   success_1, sent_list_1 = find_min_needed_sents(feat_sent_mat, new_count,
                                                  index + 1)
   # select current sentence, append
@@ -76,7 +78,7 @@ def find_the_minimum_num_of_sentences(feature_list, sent_to_feat):
 
   feat_sent_mat = [None] * len(feature_list)
   for i in range(0, len(feature_list)):
-    feat_sent_mat[i] = [False] * len(sent_to_feat)
+    feat_sent_mat[i] = [0] * len(sent_to_feat)
 
   index_to_sent_name = {}
   sent_to_feat_index = []
@@ -89,7 +91,7 @@ def find_the_minimum_num_of_sentences(feature_list, sent_to_feat):
         continue
       feat_index = feat_name_to_index[feat]
       sent_to_feat_index[index].append(feat_index)
-      feat_sent_mat[feat_index][index] = True
+      feat_sent_mat[feat_index][index] += 1
       total_feat_count[feat_index] += 1
     index += 1
 
