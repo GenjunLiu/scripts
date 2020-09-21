@@ -60,6 +60,7 @@ def extract_result(args):
 
     verifier_name = []
     phone_texts = []
+    is_discard = []
     for v in verifies:
       person = v["verifier"]
       ###################################
@@ -86,6 +87,7 @@ def extract_result(args):
       fields.append(data_dict["phone_text"])
       fields.append(data_dict["text"])
       phone_texts.append(data_dict["phone_text"])
+      is_discard.append(data_dict["is_discard"])
     fields.append(audio_url)
 
     ###################################
@@ -96,8 +98,9 @@ def extract_result(args):
       phone_list.append(phone_list[len(phone_list) - 2])
     phone_texts[1] = " ".join(phone_list)
     ###################################
-    verifier_to_text[verifier_name[0]].append(phone_texts[0])
-    verifier_to_ref_text[verifier_name[0]].append(phone_texts[1])
+    if is_discard[0] == "否" and is_discard[1] == "否":
+      verifier_to_text[verifier_name[0]].append(phone_texts[0])
+      verifier_to_ref_text[verifier_name[0]].append(phone_texts[1])
     # skip
     if phone_texts[0] == phone_texts[1]:
       continue
