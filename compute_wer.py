@@ -214,4 +214,5 @@ def compute_wer(hypothesis_list, reference_list):
   print('wer = {:.6f}'.format(100.0 * total_err / total_word))
 
 
-compute_wer(hypothesis_list, reference_list)
+if __name__ == "__main__":
+  compute_wer(hypothesis_list, reference_list)
