@@ -17,6 +17,8 @@ def parse_args():
 
 def extract_result(filename):
   all_data = {}
+  all_data_by_file = {}
+  basename = os.path.basename(filename)
   for line in open(filename).readlines():
     js_data = json.loads(line.strip())
     close_time = js_data["closed_time"]
@@ -55,8 +57,11 @@ def extract_result(filename):
     first_verifier = verifies[0]["verifier"]
     if not first_verifier in all_data:
       all_data[first_verifier] = []
+    if not basename in all_data_by_file:
+      all_data_by_file[basename] = []
     all_data[first_verifier].append(single_data)
-  return all_data
+    all_data_by_file[basename].append(single_data)
+  return all_data, all_data_by_file
 
 
 def convert_result(result):
@@ -185,14 +190,19 @@ def compute_pearson_and_accuracy(preds, labels, fp):
 
 def compute_pearson(args):
   result = {}
+  result_by_file = {}
   for f in os.listdir(args.json_dir):
     if not f.endswith(".json"):
       continue
-    all_data = extract_result(os.path.join(args.json_dir, f))
+    all_data, all_data_by_file = extract_result(os.path.join(args.json_dir, f))
     for k, v in all_data.items():
       if not k in result:
         result[k] = []
       result[k].extend(v)
+    for k, v in all_data_by_file.items():
+      if not k in result:
+        result_by_file[k] = []
+      result_by_file[k].extend(v)
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
@@ -308,27 +318,28 @@ def compute_pearson(args):
     # with open(os.path.join(args.output_dir, k + '_convert.json'), 'w') as fp:
     #   json.dump(v, fp)
 
-  data_keys = list(verifier_to_data.keys())
+  verifier_to_data_by_file = convert_result(result_by_file)
+  data_keys = list(verifier_to_data_by_file.keys())
   for i in range(0, len(data_keys)):
     for j in range(i, len(data_keys)):
       if i == j:
         continue
       fp_result.write("==== {} vs. {} ====".format(data_keys[i], data_keys[j]))
       sent_acc_1, sent_acc_2 = get_object_data(
-          verifier_to_data[data_keys[i]]["sentence_accuracy"],
-          verifier_to_data[data_keys[j]]["sentence_accuracy"])
+          verifier_to_data_by_file[data_keys[i]]["sentence_accuracy"],
+          verifier_to_data_by_file[data_keys[j]]["sentence_accuracy"])
       fp_result.write("\n**** sentence_accuracy ****\n")
       compute_pearson_and_accuracy(sent_acc_1, sent_acc_2, fp_result)
 
       sent_fluency_1, sent_fluency_2 = get_object_data(
-          verifier_to_data[data_keys[i]]["sentence_fluency"],
-          verifier_to_data[data_keys[j]]["sentence_fluency"])
+          verifier_to_data_by_file[data_keys[i]]["sentence_fluency"],
+          verifier_to_data_by_file[data_keys[j]]["sentence_fluency"])
       fp_result.write("\n**** sentence_fluency ****\n")
       compute_pearson_and_accuracy(sent_fluency_1, sent_fluency_2, fp_result)
 
       sent_words_1, sent_words_2 = get_object_data(
-          verifier_to_data[data_keys[i]]["sentence_words"],
-          verifier_to_data[data_keys[j]]["sentence_words"])
+          verifier_to_data_by_file[data_keys[i]]["sentence_words"],
+          verifier_to_data_by_file[data_keys[j]]["sentence_words"])
       fp_result.write("\n**** sentence_words ****\n")
       compute_pearson_and_accuracy(sent_words_1, sent_words_2, fp_result)
 
