@@ -163,24 +163,24 @@ def get_object_data(data_1, data_2):
   return data_vec_1, data_vec_2
 
 
-def compute_pearson_and_accuracy(preds, labels):
+def compute_pearson_and_accuracy(preds, labels, fp):
   if len(preds) == 0:
-    print("data count: {}".format(len(preds)))
-    print("pearson coef: {}".format(0))
-    print("accuracy: {}".format(0))
+    fp.write("data count: {}\n".format(len(preds)))
+    fp.write("pearson coef: {}\n".format(0))
+    fp.write("accuracy: {}\n".format(0))
     return
 
   preds_int = [int(x) for x in preds]
   labels_int = [int(x) for x in labels]
   pearson_coef = np.corrcoef(preds_int, labels_int)
-  print("data count: {}".format(len(preds_int)))
-  print("pearson coef: {}".format(pearson_coef[0][1]))
+  fp.write("data count: {}\n".format(len(preds_int)))
+  fp.write("pearson coef: {}\n".format(pearson_coef[0][1]))
 
   positive_count = 0
   for i in range(0, len(preds_int)):
     if preds_int[i] == labels_int[i]:
       positive_count += 1
-  print("accuracy: {}".format(float(positive_count) / len(preds_int)))
+  fp.write("accuracy: {}\n".format(float(positive_count) / len(preds_int)))
 
 
 def compute_pearson(args):
@@ -284,23 +284,24 @@ def compute_pearson(args):
   fp.close()
   fp_bad.close()
 
+  fp_result = open(os.path.join(args.output_dir, 'result.txt'), 'w')
   verifier_to_data = convert_result(result)
   for k, v in verifier_to_data.items():
     # verifier1 vs verifier2
-    print("====== verifier: {} ======".format(k))
+    fp_result.write("====== verifier: {} ======\n".format(k))
     sent_acc_1, sent_acc_2 = split_verifier(v["sentence_accuracy"])
-    print("\n**** sentence_accuracy ****")
-    compute_pearson_and_accuracy(sent_acc_1, sent_acc_2)
+    fp_result.write("\n**** sentence_accuracy ****\n")
+    compute_pearson_and_accuracy(sent_acc_1, sent_acc_2, fp_result)
 
     sent_fluency_1, sent_fluency_2 = split_verifier(v["sentence_fluency"])
-    print("\n**** sentence_fluency ****")
-    compute_pearson_and_accuracy(sent_fluency_1, sent_fluency_2)
+    fp_result.write("\n**** sentence_fluency ****\n")
+    compute_pearson_and_accuracy(sent_fluency_1, sent_fluency_2, fp_result)
 
     sent_words_1, sent_words_2 = split_verifier(v["sentence_words"])
-    print("\n**** sentence_words ****")
-    compute_pearson_and_accuracy(sent_words_1, sent_words_2)
+    fp_result.write("\n**** sentence_words ****\n")
+    compute_pearson_and_accuracy(sent_words_1, sent_words_2, fp_result)
 
-    print("")
+    fp_result.write("\n")
 
     # debug
     # # write to file
@@ -312,26 +313,26 @@ def compute_pearson(args):
     for j in range(i, len(data_keys)):
       if i == j:
         continue
-      print("==== {} vs. {} ====".format(data_keys[i], data_keys[j]))
+      fp_result.write("==== {} vs. {} ====".format(data_keys[i], data_keys[j]))
       sent_acc_1, sent_acc_2 = get_object_data(
           verifier_to_data[data_keys[i]]["sentence_accuracy"],
           verifier_to_data[data_keys[j]]["sentence_accuracy"])
-      print("\n**** sentence_accuracy ****")
-      compute_pearson_and_accuracy(sent_acc_1, sent_acc_2)
+      fp_result.write("\n**** sentence_accuracy ****\n")
+      compute_pearson_and_accuracy(sent_acc_1, sent_acc_2, fp_result)
 
       sent_fluency_1, sent_fluency_2 = get_object_data(
           verifier_to_data[data_keys[i]]["sentence_fluency"],
           verifier_to_data[data_keys[j]]["sentence_fluency"])
-      print("\n**** sentence_fluency ****")
-      compute_pearson_and_accuracy(sent_fluency_1, sent_fluency_2)
+      fp_result.write("\n**** sentence_fluency ****\n")
+      compute_pearson_and_accuracy(sent_fluency_1, sent_fluency_2, fp_result)
 
       sent_words_1, sent_words_2 = get_object_data(
           verifier_to_data[data_keys[i]]["sentence_words"],
           verifier_to_data[data_keys[j]]["sentence_words"])
-      print("\n**** sentence_words ****")
-      compute_pearson_and_accuracy(sent_words_1, sent_words_2)
+      fp_result.write("\n**** sentence_words ****\n")
+      compute_pearson_and_accuracy(sent_words_1, sent_words_2, fp_result)
 
-      print("")
+      fp_result.write("\n")
 
 
 if __name__ == "__main__":
