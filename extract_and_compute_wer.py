@@ -28,11 +28,6 @@ def extract_result(args):
   ]
   f.write("{}\n".format("\t".join(header)))
 
-  ###################################
-  # dead code
-  # falsify data
-  line_no = 0
-  ###################################
   verifier_to_text = defaultdict(list)
   verifier_to_ref_text = defaultdict(list)
   for line in open(args.input_json).readlines():
@@ -44,12 +39,6 @@ def extract_result(args):
     verifies = js_data["verifies"]
     fields.append(object_id)
     fields.append(close_time)
-    ###################################
-    # dead code
-    js_data["verify_count"] = 2
-    verifies.append(verifies[0])
-    line_no += 1
-    ###################################
     verify_count = js_data["verify_count"]
     if verify_count != 2:
       continue
@@ -63,11 +52,6 @@ def extract_result(args):
     is_discard = []
     for v in verifies:
       person = v["verifier"]
-      ###################################
-      # dead code
-      if line_no % 2 == 0:
-        person = "luojiawen.1017"
-      ###################################
       fields.append(person)
       verifier_name.append(person)
       main_form = v["verify_data"]["mainForm"]
@@ -90,14 +74,6 @@ def extract_result(args):
       is_discard.append(data_dict["is_discard"])
     fields.append(audio_url)
 
-    ###################################
-    # dead code
-    temp_text = phone_texts[1]
-    phone_list = temp_text.split(" ")
-    if line_no % 3 == 0 and len(phone_list) >= 2:
-      phone_list.append(phone_list[len(phone_list) - 2])
-    phone_texts[1] = " ".join(phone_list)
-    ###################################
     if is_discard[0] == "否" and is_discard[1] == "否":
       verifier_to_text[verifier_name[0]].append(phone_texts[0])
       verifier_to_ref_text[verifier_name[0]].append(phone_texts[1])
